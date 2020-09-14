@@ -1,50 +1,56 @@
-package ejercicioPatronStrategy;
 
+import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
- *
  * @authors Santino Castagno & Mariano Conchillo
  */
 public class Client {
 
-    static public final int TAM = 20000;
+    static public final int TAM = 10000;
 
     public static void main(String[] args) {
-        Context context = new Context();
-        boolean opcionInvalida = true;
         Scanner sc = new Scanner(System.in);
+        boolean opcionInvalida = true;
         int[] listaEstatica = new int[TAM];
         long tComienzo, tFinal;
 
-        System.out.println("Cargando arreglo con numeros aleatorios...");
-        for (int i = 0; i < TAM; i++) {
-            listaEstatica[i] = (int) (Math.random() * 100000);
+        // Cargamos el arreglo con números random
+        cargarArreglo(listaEstatica);
+
+        int[] lista1 = listaEstatica.clone();
+        int[] lista2 = listaEstatica.clone();
+        int[] lista3 = listaEstatica.clone();
+
+        // Utilizaremos 3 hilos para los 3 métodos de ordenamiento respectivamente
+        ScheduledExecutorService ses = Executors.newScheduledThreadPool(3);
+
+        System.out.println("El arreglo de longitud ingresada se ordenará con 3 métodos diferentes: ");
+        System.out.println("1. Método Burbuja");
+        System.out.println("2. Método Burbuja Mejorado");
+        System.out.println("3. Método QuickSort");
+
+        //Ambos burbujas utilizan el mismo metodo
+        GenericTask metodoBurbuja = new GenericTask("Burbuja", lista1, new Context(new ConcreteStrategyBubbleSort()));
+        GenericTask metodoBurbujaMejorado = new GenericTask("Burbuja mejorado", lista2, new Context(new ConcreteStrategyBubbleSortOpt()));
+        GenericTask metodoQuickSort = new GenericTask("Quicksort", lista3, new Context(new ConcreteStrategyQuickSort()));
+
+        ScheduledFuture<Integer> scheduleBurbuja = ses.schedule(metodoBurbuja, 2, TimeUnit.SECONDS);
+        ScheduledFuture<Integer> scheduleBurbujaMej = ses.schedule(metodoBurbujaMejorado, 2, TimeUnit.SECONDS);
+        ScheduledFuture<Integer> scheduleQuickSort = ses.schedule(metodoQuickSort, 2, TimeUnit.SECONDS);
+
+        try {
+            System.out.println("Método QuickSort tardó: " + scheduleQuickSort.get() + " ms");
+            System.out.println("Método Burbuja Mejorado tardó: " + scheduleBurbujaMej.get() + " ms");
+            System.out.println("Método Burbuja tardó: " + scheduleBurbuja.get() + " ms");
+        } catch (Exception e) {
+            System.out.println("Error:" + e.getMessage());
         }
-        System.out.println("Lista recien horneada\n"+listaEstaticaToString(listaEstatica));
-        do {
-            //Se le permite elegir la opción al user.
-            System.out.println("¿Que algoritmo de ordenamiento desea utilizar?\n1.BubbleSort\n2.QuickSort");
-            switch (sc.nextInt()) {
-                case 1:
-                    context.setStrategy(new ConcreteStrategyBubbleSort());
-                    opcionInvalida = false;
-                    break;
-                case 2:
-                    context.setStrategy(new ConcreteStrategyQuickSort());
-                    opcionInvalida = false;
-                    break;
-                default:
-                    System.out.println("Opcion invalida.");
-                    break;
-            }
-        } while (opcionInvalida);
-        tComienzo = System.currentTimeMillis();
-        context.exeStrategy(listaEstatica);
-        tFinal = System.currentTimeMillis();
-        
-        System.out.println("Lista luego de ordenar\n"+listaEstaticaToString(listaEstatica));
-        System.out.println("El metodo de ordenamiento tardo: " + (tFinal- tComienzo) + " ms en ordenar");
+        ses.shutdown();
     }
 
     public static String listaEstaticaToString(int[] values) {
@@ -52,8 +58,17 @@ public class Client {
         String listaEnTexto = "";
 
         for (int i = 0; i < tamArray; i++) {
-            listaEnTexto += "["+values[i]+"]";
+            listaEnTexto += "[" + values[i] + "]";
         }
         return listaEnTexto;
+    }
+
+    // metodo para cargar el arreglo con numeros random
+    public static void cargarArreglo(int[] arr) {
+        Random ran = new Random();
+
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = ran.nextInt(1001) + 1;
+        }
     }
 }
