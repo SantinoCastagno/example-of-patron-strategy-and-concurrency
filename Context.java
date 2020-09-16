@@ -1,4 +1,8 @@
 
+
+import java.util.LinkedList;
+
+
 /**
  *
  * @authors Santino Castagno & Mariano Conchillo
@@ -15,7 +19,7 @@ public class Context {
        this.formaDeOrdenar = nuevaFormaDeOrdenar; 
     }
     
-    public void exeStrategy(int[] valores){
-        formaDeOrdenar.sortMyList(valores);
+    public void exeStrategy(LinkedList[] paises, int opcion){
+        formaDeOrdenar.sortMyList(paises, opcion);
     }
 }

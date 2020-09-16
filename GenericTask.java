@@ -1,24 +1,27 @@
-import javax.xml.namespace.QName;
+package pkfinal;
+
+import java.util.LinkedList;
 import java.util.concurrent.Callable;
 
 public class GenericTask implements Callable{
 
     private final String name;
-    private final int[] arr;
-    private Context enfoque;
+    private final LinkedList[] paises;
+    private final Context enfoque;
+    private int opcion;
 
-    public GenericTask(String name, int[] arr, Context enfoque) {
+    public GenericTask(String name, LinkedList[] paises, Context enfoque, int opcion) {
         this.name = name;
-        this.arr = arr;
+        this.paises = paises;
         this.enfoque = enfoque;
+        this.opcion = opcion;
     }
 
     @Override
     public Long call() {
-        long tiempoInicio = System.currentTimeMillis();
-        enfoque.exeStrategy(arr);
-        System.out.println("El método "+ this.name +" terminó.");
-        return System.currentTimeMillis() - tiempoInicio;
+        long tiempoInicio = System.nanoTime();
+        enfoque.exeStrategy(paises, opcion);
+        return System.nanoTime() - tiempoInicio;
     }
 
 }
